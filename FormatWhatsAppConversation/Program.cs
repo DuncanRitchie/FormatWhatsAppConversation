@@ -9,60 +9,26 @@ namespace FormatWhatsAppConversation
     class Program
     {
         static Application Application;
+        static Document Document;
 
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to the app!");
-            Console.WriteLine("Reading file...");
             string readFilePath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\_chat.txt"));
-            Console.WriteLine(readFilePath);
+            Console.WriteLine($"Reading file {readFilePath}");
 
             if (File.Exists(readFilePath))
             {
-                string[] readText = File.ReadAllLines(readFilePath);
-                //Console.WriteLine(readText);
-
-                List<string> formattedText = new List<string> { };
-
-                Regex regex = new Regex(@"\[(?<datetime>\d\d\/\d\d\/\d\d\d\d, \d\d:\d\d:\d\d)\] (?<author>[^:]+): (?<content>.*$)");
-
-                foreach (string line in readText)
-                {
-                    if (line.Trim().Equals("")) { continue; }
-
-                    Match match = regex.Match(line);
-                    if (match.Success)
-                    {
-                        //Console.WriteLine($"{match.Groups["author"]} at {match.Groups["datetime"]} said: {match.Groups["content"]}");
-
-                        formattedText.Add($"{match.Groups["author"].Value} — {match.Groups["datetime"].Value}");
-                        formattedText.Add(match.Groups["content"].Value);
-                    }
-                    else
-                    {
-                        formattedText.Add(line);
-                    }
-                }
-
-
                 Application = new Application();
-                Document doc = Application.Documents.Add(Visible: true);
-                var missing = Type.Missing;
-                Application.Visible = true;
+                Document = Application.Documents.Add(Visible: true);
 
-                doc.Content.Text = Join(formattedText);
+                File.ReadAllLines(readFilePath)
+                    .ConvertToDocumentText()
+                    .WriteToDocument(Document)
+                    .ApplyHeadingStyle();
 
-                Regex headingRegex = new Regex(@"(?<author>[^—]+) — (?<datetime>\d\d\/\d\d\/\d\d\d\d, \d\d:\d\d:\d\d)$");
-                foreach (Paragraph paragraph in doc.Paragraphs)
-                {
-                    Match match = headingRegex.Match(paragraph.Range.Text.Trim());
-                    if (match.Success)
-                    {
-                        paragraph.set_Style(WdBuiltinStyle.wdStyleHeading2);
-                    }
-                }
-
-                doc.SaveAs2("hello.docx", ReadOnlyRecommended: false);
+                Document.SaveAs2("hello.docx", ReadOnlyRecommended: false);
+                Console.WriteLine("The document has been saved.");
             }
             else
             {
@@ -79,6 +45,42 @@ namespace FormatWhatsAppConversation
             Application?.Quit();
             Console.WriteLine("Word has been closed.");
         }
+    }
+
+    public static class ExtensionMethods
+    {
+        public static List<string> ConvertToDocumentText(this string[] textLines)
+        {
+            List<string> formattedText = new List<string> { };
+
+            Regex regex = new Regex(@"\[(?<datetime>\d\d\/\d\d\/\d\d\d\d, \d\d:\d\d:\d\d)\] (?<author>[^:]+): (?<content>.*$)");
+
+            foreach (string line in textLines)
+            {
+                if (line.Trim().Equals("")) { continue; }
+
+                Match match = regex.Match(line);
+                if (match.Success)
+                {
+                    //Console.WriteLine($"{match.Groups["author"]} at {match.Groups["datetime"]} said: {match.Groups["content"]}");
+
+                    formattedText.Add($"{match.Groups["author"].Value} — {match.Groups["datetime"].Value}");
+                    formattedText.Add(match.Groups["content"].Value);
+                }
+                else
+                {
+                    formattedText.Add(line);
+                }
+            }
+
+            return formattedText;
+        }
+
+        public static Document WriteToDocument(this List<string> text, Document document)
+        {
+            document.Content.Text = Join(text);
+            return document;
+        }
 
         static string Join(List<string> strings)
         {
@@ -88,6 +90,19 @@ namespace FormatWhatsAppConversation
                 output = $"{output}{line}\n";
             }
             return output;
+        }
+
+        public static void ApplyHeadingStyle(this Document document)
+        {
+            Regex headingRegex = new Regex(@"(?<author>[^—]+) — (?<datetime>\d\d\/\d\d\/\d\d\d\d, \d\d:\d\d:\d\d)$");
+            foreach (Paragraph paragraph in document.Paragraphs)
+            {
+                Match match = headingRegex.Match(paragraph.Range.Text.Trim());
+                if (match.Success)
+                {
+                    paragraph.set_Style(WdBuiltinStyle.wdStyleHeading2);
+                }
+            }
         }
     }
 }
