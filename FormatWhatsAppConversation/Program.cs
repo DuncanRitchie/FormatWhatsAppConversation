@@ -16,6 +16,8 @@ namespace FormatWhatsAppConversation
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to the app!");
+
+            PromptForInputFile();
             Console.WriteLine($"Reading file {InputTextFilePath}...");
 
             if (File.Exists(InputTextFilePath))
@@ -26,7 +28,8 @@ namespace FormatWhatsAppConversation
                 File.ReadAllLines(InputTextFilePath)
                     .ConvertToDocumentText()
                     .WriteToDocument(Document)
-                    .ApplyHeadingStyle();
+                    .ApplyHeadingStyle()
+                    .InsertPictures(InputTextFilePath);
 
                 Document.SaveAs2(OutputDocumentFileName, ReadOnlyRecommended: false);
                 Console.WriteLine($"The document has been saved in your Documents folder as {OutputDocumentFileName}.");
@@ -39,6 +42,22 @@ namespace FormatWhatsAppConversation
             Console.WriteLine("The app has finished.");
             CloseWord();
             Console.ReadLine();
+        }
+
+        static void PromptForInputFile()
+        {
+            Console.WriteLine("Please enter the folder path containg _chat.txt.");
+            string userEntry = Console.ReadLine();
+            string inputTextFilePath = Path.GetFullPath(Path.Combine(userEntry, @"_chat.txt"));
+            if (File.Exists(inputTextFilePath))
+            {
+                InputTextFilePath = inputTextFilePath;
+            }
+            else
+            {
+                Console.WriteLine($"{inputTextFilePath} does not exist.");
+                PromptForInputFile();
+            }
         }
 
         static void CloseWord()
@@ -122,7 +141,7 @@ namespace FormatWhatsAppConversation
             return output;
         }
 
-        public static void ApplyHeadingStyle(this Document document)
+        public static Document ApplyHeadingStyle(this Document document)
         {
             //// Style the first paragraph as the title.
             string titleText = document.Paragraphs[1].Range.Text.Trim();
@@ -141,6 +160,51 @@ namespace FormatWhatsAppConversation
                 }
             }
             Console.WriteLine("All heading styles have been applied.");
+            return document;
+        }
+
+        public static Document InsertPictures(this Document document, string filepathInFolder)
+        {
+            Console.WriteLine("Looking for places to insert pictures...");
+            Regex attachedRegex = new Regex(@"(?<attachedTag>‎<attached: (?<filename>[\w-]+\.(?<extension>\w{2,6})))>");
+            float desiredSize = 360;
+
+            foreach (Paragraph paragraph in document.Paragraphs)
+            {
+                Match attachedMatch = attachedRegex.Match(paragraph.Range.Text);
+                if (attachedMatch.Success && attachedMatch.Groups["extension"].Value != "mp4" && attachedMatch.Groups["extension"].Value != "vcf")
+                {
+                    try
+                    {
+                        string pictureFilePath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(filepathInFolder), attachedMatch.Groups["filename"].Value));
+                        paragraph.Range.Text = "\r";
+                        Console.WriteLine($"Inserting a picture: {pictureFilePath} ...");
+                        InlineShape picture = paragraph.Previous().Range.InlineShapes.AddPicture(pictureFilePath);
+                        picture.Title = attachedMatch.Groups["filename"].Value;
+
+                        //// Resize the image, preserving aspect ratio.
+                        float aspectRatio = picture.Width / picture.Height;
+                        if (aspectRatio > 1)
+                        {
+                            picture.Width = desiredSize;
+                            picture.Height = desiredSize / aspectRatio;
+                        }
+                        else
+                        {
+                            picture.Height = desiredSize;
+                            picture.Width = desiredSize * aspectRatio;
+                        }
+
+                        //// Delete the “<attached: ...>” text.
+                        //paragraph.Range.Text = paragraph.Range.Text.Replace(attachedMatch.Groups["attachedTag"].Value, "");
+                    }
+                    catch (Exception error)
+                    {
+                        Console.WriteLine(error.Message);
+                    }
+                }
+            }
+            return document;
         }
     }
 }
