@@ -36,8 +36,8 @@ namespace FormatWhatsAppConversation
             }
 
             Console.WriteLine("The app has finished.");
-            Console.ReadLine();
             CloseWord();
+            Console.ReadLine();
         }
 
         static void CloseWord()
@@ -52,7 +52,7 @@ namespace FormatWhatsAppConversation
         public static List<string> ConvertToDocumentText(this string[] textLines)
         {
             Console.WriteLine("Re-arranging the text for the document...");
-            List<string> formattedText = new List<string> { };
+            List<string> paragraphTexts = new List<string> { };
 
             Regex mainRegex = new Regex(@"\[(?<datetime>\d\d\/\d\d\/\d\d\d\d, \d\d:\d\d:\d\d)\] (?<author>[^:]+): (?<content>.*$)");
             Regex titleRegex = new Regex(@"\[(?<datetime>\d\d\/\d\d\/\d\d\d\d, \d\d:\d\d:\d\d)\] (?<creator>.+) created group “(?<title>.+)”");
@@ -60,37 +60,47 @@ namespace FormatWhatsAppConversation
 
             foreach (string line in textLines)
             {
+                //// Omit empty paragraphs.
                 if (line.Trim().Equals("")) { continue; }
 
+                //// If the paragraph contains a datetime, author, and content...
                 Match mainMatch = mainRegex.Match(line);
                 if (mainMatch.Success)
                 {
+                    //// The default message about WhatsApp encryption gets omitted.
                     if (mainMatch.Groups["content"].Value.Contains(groupStartMessage))
                     {
                         Console.WriteLine("Ignoring WhatsApp’s message about encryption.");
                     }
+                    //// Non-WhatsApp messages.
                     else
                     {
-                        formattedText.Add($"{mainMatch.Groups["author"].Value} — {mainMatch.Groups["datetime"].Value}");
-                        formattedText.Add(mainMatch.Groups["content"].Value);
+                        //// This will match headingRegex and be formatted as Heading 2, in ApplyHeadingStyle.
+                        paragraphTexts.Add($"{mainMatch.Groups["author"].Value} — {mainMatch.Groups["datetime"].Value}");
+                        //// This is just the (first paragraph of) content.
+                        paragraphTexts.Add(mainMatch.Groups["content"].Value);
                     }
                     continue;
                 }
 
+                //// If the line is the default message about who created the WhatsApp group...
                 Match titleMatch = titleRegex.Match(line);
                 if (titleMatch.Success)
                 {
-                    formattedText.Add(titleMatch.Groups["title"].Value);
-                    formattedText.Add($"{titleMatch.Groups["creator"]} created this group at {titleMatch.Groups["datetime"]}");
+                    //// ApplyHeadingStyle will style this as Title if it is the first paragraph in the document.
+                    paragraphTexts.Add(titleMatch.Groups["title"].Value);
+                    //// This will probably be the second paragraph in the document.
+                    paragraphTexts.Add($"{titleMatch.Groups["creator"]} created this group at {titleMatch.Groups["datetime"]}");
                 }
+                //// Lines that don’t match the regexes are paragraphs that aren’t first for their author and datetime.
                 else
                 {
-                    formattedText.Add(line);
+                    paragraphTexts.Add(line);
                 }
             }
 
             Console.WriteLine("The text has been arranged into the format for the document.");
-            return formattedText;
+            return paragraphTexts;
         }
 
         public static Document WriteToDocument(this List<string> text, Document document)
@@ -113,10 +123,12 @@ namespace FormatWhatsAppConversation
 
         public static void ApplyHeadingStyle(this Document document)
         {
+            //// Style the first paragraph as the title.
             string titleText = document.Paragraphs[1].Range.Text.Trim();
             document.Paragraphs[1].set_Style(WdBuiltinStyle.wdStyleTitle);
             Console.WriteLine($"“{titleText}” has been styled as the document title.");
 
+            //// Apply style of Heading 2 to paragraphs containing an author and a datetime.
             Console.WriteLine("Applying heading styles...");
             Regex headingRegex = new Regex(@"(?<author>[^—]+) — (?<datetime>\d\d\/\d\d\/\d\d\d\d, \d\d:\d\d:\d\d)$");
             foreach (Paragraph paragraph in document.Paragraphs)
