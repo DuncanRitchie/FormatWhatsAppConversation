@@ -10,25 +10,26 @@ namespace FormatWhatsAppConversation
     {
         static Application Application;
         static Document Document;
+        static string InputTextFilePath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\_chat.txt"));
+        static string OutputDocumentFileName = "formatted-chat.docx";
 
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to the app!");
-            string readFilePath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\_chat.txt"));
-            Console.WriteLine($"Reading file {readFilePath}");
+            Console.WriteLine($"Reading file {InputTextFilePath}...");
 
-            if (File.Exists(readFilePath))
+            if (File.Exists(InputTextFilePath))
             {
                 Application = new Application();
                 Document = Application.Documents.Add(Visible: true);
 
-                File.ReadAllLines(readFilePath)
+                File.ReadAllLines(InputTextFilePath)
                     .ConvertToDocumentText()
                     .WriteToDocument(Document)
                     .ApplyHeadingStyle();
 
-                Document.SaveAs2("hello.docx", ReadOnlyRecommended: false);
-                Console.WriteLine("The document has been saved.");
+                Document.SaveAs2(OutputDocumentFileName, ReadOnlyRecommended: false);
+                Console.WriteLine($"The document has been saved in your Documents folder as {OutputDocumentFileName}.");
             }
             else
             {
