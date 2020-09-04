@@ -178,9 +178,16 @@ namespace FormatWhatsAppConversation
                     try
                     {
                         string pictureFilePath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(filepathInFolder), attachedMatch.Groups["filename"].Value));
+
+                        //// Delete the “<attached: ...>” text.
                         paragraph.Range.Text = "\r";
+
+                        //// Insert the picture.
                         Console.WriteLine($"Inserting a picture: {pictureFilePath} ...");
-                        InlineShape picture = paragraph.Previous().Range.InlineShapes.AddPicture(pictureFilePath);
+                        Range range = document.Range(paragraph.Range.Start - 1, paragraph.Range.Start);
+                        InlineShape picture = range.InlineShapes.AddPicture(pictureFilePath);
+
+                        //// Give it a title.
                         picture.Title = attachedMatch.Groups["filename"].Value;
 
                         //// Resize the image, preserving aspect ratio.
@@ -195,9 +202,6 @@ namespace FormatWhatsAppConversation
                             picture.Height = desiredSize;
                             picture.Width = desiredSize * aspectRatio;
                         }
-
-                        //// Delete the “<attached: ...>” text.
-                        //paragraph.Range.Text = paragraph.Range.Text.Replace(attachedMatch.Groups["attachedTag"].Value, "");
                     }
                     catch (Exception error)
                     {
