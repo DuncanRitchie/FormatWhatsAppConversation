@@ -10,9 +10,10 @@ Prerequisites:
 
 To use this app, you will need to: 
 * clone this repo,
-* move the text file <kbd>_chat.txt</kbd> into the root directory,
+* ensure that the text file <kbd>_chat.txt</kbd> is on your computer,
 * build the Visual Studio solution, and 
-* then run the program (eg by clicking “Start” in Visual Studio).
+* run the program (eg by clicking “Start” in Visual Studio),
+* input the path of the text file when you’re prompted to.
 
 The app will immediately start processing the text, to eventually save a <kbd>formatted-chat.docx</kbd> Word document in your Documents folder.
 
@@ -64,3 +65,6 @@ The author names and date-times are styled as Heading 2.
 
 The other text is styled as Normal.
 
+## Embedded pictures
+WhatsApp has the option to export with or without media. If the export is with media, it produces a zipped folder containing the <kbd>_chat.txt</kbd> file and any media. The media are represented in the text file with a tag such as <kbd><attached: 00000164-PHOTO-2020-06-09-19-59-33.jpg></kbd>. Because of this, I have made it that if the tag is found, my program will try to embed the relevant image in its place in the document.
+  
