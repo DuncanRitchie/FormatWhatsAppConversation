@@ -167,12 +167,13 @@ namespace FormatWhatsAppConversation
         {
             Console.WriteLine("Looking for places to insert pictures...");
             Regex attachedRegex = new Regex(@"(?<attachedTag>‎<attached: (?<filename>[\w-]+\.(?<extension>\w{2,6})))>");
+            List<string> unwantedExtensions = new List<string> { "mp4", "vcf" };
             float desiredSize = 360;
 
             foreach (Paragraph paragraph in document.Paragraphs)
             {
                 Match attachedMatch = attachedRegex.Match(paragraph.Range.Text);
-                if (attachedMatch.Success && attachedMatch.Groups["extension"].Value != "mp4" && attachedMatch.Groups["extension"].Value != "vcf")
+                if (attachedMatch.Success && !unwantedExtensions.Contains(attachedMatch.Groups["extension"].Value))
                 {
                     try
                     {
