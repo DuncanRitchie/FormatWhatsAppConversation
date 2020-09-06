@@ -13,7 +13,7 @@ To use this app, you will need to:
 * ensure that the text file <kbd>_chat.txt</kbd> is on your computer,
 * build the Visual Studio solution, and 
 * run the program (eg by clicking “Start” in Visual Studio),
-* input the path of the text file when you’re prompted to.
+* input the path of the folder containing the text file when you’re prompted to.
 
 The app will immediately start processing the text, to eventually save a <kbd>formatted-chat.docx</kbd> Word document in your Documents folder.
 
