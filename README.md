@@ -3,19 +3,22 @@ Console-app to format the text backup of a WhatsApp conversation into a Word doc
 Pretty niche, and not the most user-friendly, but it does what I needed it to do.
 
 ## How to use this app
-Prerequisites:
-* Windows,
-* Visual Studio (just because I haven’t made a publish build), and
-* Microsoft Word (because this app uses the Word interop API).
+Prerequisites: Windows and Microsoft Word, because this app uses the Word interop API.
 
 To use this app, you will need to: 
-* clone this repo,
-* ensure that the text file <kbd>_chat.txt</kbd> is on your computer,
-* build the Visual Studio solution, and 
-* run the program (eg by clicking “Start” in Visual Studio),
+* download [FormatWhatsAppConversation.exe](https://github.com/DuncanRitchie/FormatWhatsAppConversation/blob/main/FormatWhatsAppConversation/bin/Release/FormatWhatsAppConversation.exe),
+* ensure that a text file <kbd>_chat.txt</kbd> is on your computer,
+* run the program,
 * input the path of the folder containing the text file when you’re prompted to.
 
 The app will immediately start processing the text, to eventually save a <kbd>formatted-chat.docx</kbd> Word document in your Documents folder.
+
+If you want run the app from source, here’s how to do that:
+* clone or fork this repo,
+* ensure that a text file <kbd>_chat.txt</kbd> is on your computer,
+* build the Visual Studio solution, and 
+* run the program (eg by clicking “Start” in Visual Studio),
+* input the path of the folder containing the text file when you’re prompted to.
 
 ## Input
 The messaging app WhatsApp allows you to export a conversation to a <kbd>_chat.txt</kbd> file. It looks like this:
@@ -35,6 +38,8 @@ The messaging app WhatsApp allows you to export a conversation to a <kbd>_chat.t
 [04/03/2019, 11:33:57] Cat: Miaow miaow
 
 </pre>
+
+In addition, the text may include references to media; see “Embedded pictures” below.
 
 ## Output
 Given the input above, <kbd>formatted-chat.docx</kbd> will look like this:
