@@ -48,7 +48,9 @@ namespace FormatWhatsAppConversation
         static void PromptForInputFile()
         {
             Console.WriteLine("Please enter the folder path containg _chat.txt.");
+            Console.ForegroundColor = ConsoleColor.Magenta;
             string userEntry = Console.ReadLine();
+            Console.ForegroundColor = ConsoleColor.White;
             string inputTextFilePath = Path.GetFullPath(Path.Combine(userEntry, @"_chat.txt"));
             if (File.Exists(inputTextFilePath))
             {
