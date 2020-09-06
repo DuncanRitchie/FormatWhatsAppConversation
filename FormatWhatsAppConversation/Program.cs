@@ -15,7 +15,8 @@ namespace FormatWhatsAppConversation
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to the app!");
+            Console.Title = "Format WhatsApp Conversation";
+            Console.WriteLine("Welcome to Duncan Ritchie’s app to create a Word document from the backup of a WhatsApp conversation!");
 
             PromptForInputFile();
             Console.WriteLine($"Reading file {InputTextFilePath}...");
